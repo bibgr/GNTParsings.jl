@@ -1,0 +1,7 @@
+name = "GNTParsings"
+uuid = "8ac77548-998e-4396-a7ec-2f49552d3ae4"
+authors = ["C. Naaktgeboren <NaaktgeborenC.PhD@gmail.com>"]
+version = "0.1.0"
+
+[compat]
+julia = "1.12"
