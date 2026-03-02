@@ -56,5 +56,6 @@ end
 
 export parsing
 
-parsing(all::S) where S<:AbstractString = parsing(split(all, ' ')...)
+# discourse.julialang.org/t/world-age-warning-no-eval-on-constructor-of-different-dispatch/135947
+# parsing(all::S) where S<:AbstractString = parsing(split(all, ' ')...)
 
