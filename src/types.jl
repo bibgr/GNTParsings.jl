@@ -30,7 +30,7 @@ meaning = Dict(
             '3' => ("3rd p.", "third person"),
         ),
     ),
-    :tense => Dict(
+    :ten => Dict(
         :what => "Tense",
         :code => Dict(
             '-' => ("no t.", "no tense"),
@@ -42,7 +42,7 @@ meaning = Dict(
             'Y' => ("plpf.", "pluperfect"),
         ),
     ),
-    :voice => Dict(
+    :voi => Dict(
         :what => "Voice",
         :code => Dict(
             '-' => ("no v.", "no voice"),
@@ -51,7 +51,7 @@ meaning = Dict(
             'P' => ("pass.", "passive"),
         ),
     ),
-    :mood => Dict(
+    :moo => Dict(
         :what => "Mood",
         :code => Dict(
             '-' => ("no m.", "no mood"),
@@ -63,7 +63,7 @@ meaning = Dict(
             'P' => ("ptc.", "participle"),
         ),
     ),
-    :case => Dict(
+    :cas => Dict(
         :what => "Case",
         :code => Dict(
             '-' => ("no c.", "no case"),
@@ -73,7 +73,7 @@ meaning = Dict(
             'A' => ("acc.", "accusative"),
         ),
     ),
-    :number => Dict(
+    :num => Dict(
         :what => "Number",
         :code => Dict(
             '-' => ("no n.", "no number"),
@@ -81,7 +81,7 @@ meaning = Dict(
             'P' => ("pl.", "plural"),
         ),
     ),
-    :gender => Dict(
+    :gen => Dict(
         :what => "Gender",
         :code => Dict(
             '-' => ("no g.", "no gender"),
@@ -90,7 +90,7 @@ meaning = Dict(
             'N' => ("n.", "neuter"),
         ),
     ),
-    :degree => Dict(
+    :deg => Dict(
         :what => "Degree",
         :code => Dict(
             '-' => ("no d.", "no degree"),
@@ -159,6 +159,29 @@ function show(io::IO, x::parsing)
 end
 
 # Explain
+function _srt_explain(io::IO, x::parsing)
+    ret = String[]
+    push!(ret, meaning[:pos][:code][x.pos][1])
+    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
+        val = @eval($x.$key)
+        if val != '-'
+            push!(ret, meaning[key][:code][val][1])
+        end
+    end
+    return join(ret, "")
+end
+
+function _mid_explain(io::IO, x::parsing)
+    ret = String[]
+    push!(ret, meaning[:pos][:code][x.pos][2])
+    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
+        val = @eval($x.$key)
+        if val != '-'
+            push!(ret, meaning[key][:code][val][2])
+        end
+    end
+    return join(ret, "")
+end
 
 function _explain(io::IO, x::parsing)
     
