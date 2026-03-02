@@ -32,10 +32,9 @@ struct parsing <: GNTParsings
     # ('-', 'C', 'S')
     deg::Char
     # Internal (validating) constructor
-    function parsing(pos::S,
-                     per::C="-", ten::C="-", voi::C="-", moo::C="-",
-                     cas::C="-", num::C="-", gen::C="-", deg::C="-"
-                    ) where {S<:AbstractString, C<:AbstractChar}
+    function parsing(pos::S, per::C, ten::C,
+                     voi::C, moo::C, cas::C,
+                     num::C, gen::C, deg::C) where {S<:AbstractString, C<:AbstractChar}
         @assert(
             pos in ("A-", "C-", "D-", "I-", "N-", "P-","V-", "X-") ||
             pos in ("RA", "RD", "RI", "RP", "RR")
@@ -50,12 +49,16 @@ struct parsing <: GNTParsings
         @assert deg in "-CS"
         return new(pos, per, ten, voi, moo, cas, num, gen, deg)
     end
-    # Internal convenience constructors
-    parsing(pos::S, par::S) where S<:AbstractString = parsing(pos, par...)
 end
 
 export parsing
 
-# discourse.julialang.org/t/world-age-warning-no-eval-on-constructor-of-different-dispatch/135947
-# parsing(all::S) where S<:AbstractString = parsing(split(all, ' ')...)
+# External convenience constructors - two-arg splatting version
+parsing(pos::S, par::S) where S<:AbstractString = parsing(pos, par...)
+
+# External convenience constructors - one-arg, space-delimited version
+parsing(all::S) where S<:AbstractString = begin
+    spl = split(all, limit=2)
+    parsing(spl[1], join(split(spl[2]), ""))
+end
 
