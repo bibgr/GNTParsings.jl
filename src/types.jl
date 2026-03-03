@@ -121,18 +121,15 @@ struct Parsing <: GNTParsings
                      voi::C, moo::C, cas::C,
                      num::C, gen::C, deg::C) where {S<:AbstractString, C<:AbstractChar}
         cat = "$pos $per$ten$voi$moo$cas$num$gen$deg"
-        @assert(
-            pos in ("A-","C-","D-","I-","N-","P-","RA","RD","RI","RP","RR","V-","X-"),
-            "'$cat': invalid part of speech '$pos'"
-        )
-        @assert(per in "-123"   , "'$cat': invalid person '$per'")
-        @assert(ten in "-AFIPXY", "'$cat': invalid tense  '$ten'")
-        @assert(voi in "-AMP"   , "'$cat': invalid voice  '$voi'")
-        @assert(moo in "-DINOPS", "'$cat': invalid mood   '$moo'")
-        @assert(cas in "-ADGNV" , "'$cat': invalid case   '$cas'")
-        @assert(num in "-PS"    , "'$cat': invalid number '$num'")
-        @assert(gen in "-FMN"   , "'$cat': invalid gender '$gen'")
-        @assert(deg in "-CS"    , "'$cat': invalid degree '$deg'")
+        @assert(pos in keys(meaning[:pos][:code]), "'$cat': invalid part of speech '$pos'")
+        @assert(per in keys(meaning[:per][:code]), "'$cat': invalid person '$per'")
+        @assert(ten in keys(meaning[:ten][:code]), "'$cat': invalid tense  '$ten'")
+        @assert(voi in keys(meaning[:voi][:code]), "'$cat': invalid voice  '$voi'")
+        @assert(moo in keys(meaning[:moo][:code]), "'$cat': invalid mood   '$moo'")
+        @assert(cas in keys(meaning[:cas][:code]), "'$cat': invalid case   '$cas'")
+        @assert(num in keys(meaning[:num][:code]), "'$cat': invalid number '$num'")
+        @assert(gen in keys(meaning[:gen][:code]), "'$cat': invalid gender '$gen'")
+        @assert(deg in keys(meaning[:deg][:code]), "'$cat': invalid degree '$deg'")
         return new(pos, per, ten, voi, moo, cas, num, gen, deg)
     end
 end
