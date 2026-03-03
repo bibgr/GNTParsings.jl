@@ -24,7 +24,7 @@ meaning = Dict(
     :per => Dict(
         :what => "Person",
         :code => Dict(
-            '-' => ("no p.", "impersonal"),
+            '-' => ("", ""),
             '1' => ("1st p.", "first person"),
             '2' => ("2nd p.", "second person"),
             '3' => ("3rd p.", "third person"),
@@ -33,7 +33,7 @@ meaning = Dict(
     :ten => Dict(
         :what => "Tense",
         :code => Dict(
-            '-' => ("no t.", "no tense"),
+            '-' => ("", ""),
             'P' => ("pres.", "present"),
             'I' => ("impf.", "imperfect"),
             'F' => ("fut.", "future"),
@@ -45,7 +45,7 @@ meaning = Dict(
     :voi => Dict(
         :what => "Voice",
         :code => Dict(
-            '-' => ("no v.", "no voice"),
+            '-' => ("", ""),
             'A' => ("act.", "active"),
             'M' => ("mid.", "middle"),
             'P' => ("pass.", "passive"),
@@ -54,7 +54,7 @@ meaning = Dict(
     :moo => Dict(
         :what => "Mood",
         :code => Dict(
-            '-' => ("no m.", "no mood"),
+            '-' => ("", ""),
             'I' => ("indic.", "indicative"),
             'D' => ("imper.", "imperative"),
             'S' => ("subj.", "subjunctive"),
@@ -66,7 +66,7 @@ meaning = Dict(
     :cas => Dict(
         :what => "Case",
         :code => Dict(
-            '-' => ("no c.", "no case"),
+            '-' => ("", ""),
             'N' => ("nom.", "nominative"),
             'G' => ("gen.", "genitive"),
             'D' => ("dat.", "dative"),
@@ -77,7 +77,7 @@ meaning = Dict(
     :num => Dict(
         :what => "Number",
         :code => Dict(
-            '-' => ("no n.", "no number"),
+            '-' => ("", ""),
             'S' => ("sg.", "singular"),
             'P' => ("pl.", "plural"),
         ),
@@ -85,7 +85,7 @@ meaning = Dict(
     :gen => Dict(
         :what => "Gender",
         :code => Dict(
-            '-' => ("no g.", "no gender"),
+            '-' => ("", ""),
             'M' => ("m.", "masculine"),
             'F' => ("f.", "feminine"),
             'N' => ("n.", "neuter"),
@@ -94,7 +94,7 @@ meaning = Dict(
     :deg => Dict(
         :what => "Degree",
         :code => Dict(
-            '-' => ("no d.", "no degree"),
+            '-' => ("", ""),
             'C' => ("comp.", "comparative"),
             'S' => ("sup.", "superlative"),
         ),
@@ -102,11 +102,11 @@ meaning = Dict(
 )
 
 """
-`struct parsing <: GNTParsings`\n
+`struct Parsing <: GNTParsings`\n
 
-The `GNTParsings` module parsing internal representation.
+The `GNTParsings` module Parsing internal representation.
 """
-struct parsing <: GNTParsings
+struct Parsing <: GNTParsings
     pos::String     # Part of speech
     per::Char       # Person
     ten::Char       # Tense
@@ -117,7 +117,7 @@ struct parsing <: GNTParsings
     gen::Char       # Gender
     deg::Char       # Degree
     # Internal (validating) constructor
-    function parsing(pos::S, per::C, ten::C,
+    function Parsing(pos::S, per::C, ten::C,
                      voi::C, moo::C, cas::C,
                      num::C, gen::C, deg::C) where {S<:AbstractString, C<:AbstractChar}
         cat = "$pos $per$ten$voi$moo$cas$num$gen$deg"
@@ -137,30 +137,30 @@ struct parsing <: GNTParsings
     end
 end
 
-export parsing
+export Parsing
 
 # External convenience constructors - two-arg splatting version
-parsing(pos::X, par::Y) where {X<:AbstractString, Y<:AbstractString} = parsing(pos, par...)
+Parsing(pos::X, par::Y) where {X<:AbstractString, Y<:AbstractString} = Parsing(pos, par...)
 
 # External convenience constructors - one-arg, space-delimited version
-parsing(all::S) where S<:AbstractString = begin
+Parsing(all::S) where S<:AbstractString = begin
     spl = split(all, limit=2)
-    parsing(spl[1], join(split(spl[2]), ""))
+    Parsing(spl[1], join(split(spl[2]), ""))
 end
 
 # Base.show
 import Base: show
 
-function show(io::IO, x::parsing)
+function show(io::IO, x::Parsing)
     a = "$(x.pos) "
     for f in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
         a *= @eval $x.$f
     end
-    print(io, "parsing(\"$a\")")
+    print(io, "Parsing(\"$a\")")
 end
 
 # Meaning of
-function meaningOf(x::parsing)
+function meaningOf(x::Parsing)
     dat = NTuple{4, Union{AbstractString,AbstractChar}}[]
     for key in (:pos, :per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
         val = @eval($x.$key)
@@ -172,7 +172,7 @@ end
 export meaningOf
 
 # Explain
-function explain(x::parsing, abrflg=true,
+function explain(x::Parsing, abrflg=true,
                  posflg=false, possep=": ", posaft=": ",
                  parflg=false, parsep=": ", paraft="",
                  joinsp="")
@@ -183,7 +183,7 @@ function explain(x::parsing, abrflg=true,
     tmp  = posflg ? "$(mox[1][2])$(possep)" : ""
     tmp *= "$(mox[1][idx])$(posaft)"
     push!(ret, tmp)
-    # parsings
+    # Parsings
     for par in mox[2:end]
         tmp  = parflg ? "$(par[2])$(parsep)" : ""
         tmp *= "$(par[idx])$(paraft)"
@@ -222,61 +222,4 @@ estyles = Dict(
     )
 
 export estyles
-
-function _srt_explain(x::parsing)
-    ret = String[]
-    push!(ret, meaning[:pos][:code][x.pos][1])
-    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
-        val = @eval($x.$key)
-        if val != '-'
-            push!(ret, meaning[key][:code][val][1])
-        end
-    end
-    return length(ret) > 1 ?
-        @sprintf("%s %s", ret[1], join(ret[2:end], "")) :
-        ret[1]
-end
-
-function _mid_explain(x::parsing)
-    ret = String[]
-    push!(ret, meaning[:pos][:code][x.pos][2])
-    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
-        val = @eval($x.$key)
-        if val != '-'
-            push!(ret, meaning[key][:code][val][2])
-        end
-    end
-    return length(ret) > 1 ?
-        @sprintf("%s: %s", ret[1], join(ret[2:end], " ")) :
-        ret[1]
-end
-
-function _eng_explain(x::parsing)
-    ret = String[]
-    push!(ret, meaning[:pos][:code][x.pos][2])
-    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
-        val = @eval($x.$key)
-        if val != '-'
-            push!(ret, meaning[key][:code][val][2])
-        end
-    end
-    return length(ret) > 1 ?
-        @sprintf("%s %s", join(ret[2:end], " "), ret[1]) :
-        ret[1]
-end
-
-function _lng_explain(x::parsing, ind::S=" "^4) where S<:AbstractString
-    ret = String[]
-    tmp = @sprintf("%s\n%s%s", meaning[:pos][:what], ind, meaning[:pos][:code][x.pos][2])
-    push!(ret, tmp)
-    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
-        val = @eval($x.$key)
-        if val != '-'
-            push!(ret, meaning[key][:code][val][2])
-        end
-    end
-    return length(ret) > 1 ?
-        @sprintf("%s: %s", ret[1], join(ret[2:end], " ")) :
-        ret[1]
-end
 
