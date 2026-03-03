@@ -71,6 +71,7 @@ meaning = Dict(
             'G' => ("gen.", "genitive"),
             'D' => ("dat.", "dative"),
             'A' => ("acc.", "accusative"),
+            'V' => ("voc.", "vocative"),
         ),
     ),
     :num => Dict(
@@ -158,8 +159,71 @@ function show(io::IO, x::parsing)
     print(io, "parsing(\"$a\")")
 end
 
+# Meaning of
+function meaningOf(x::parsing)
+    dat = NTuple{4, Union{AbstractString,AbstractChar}}[]
+    for key in (:pos, :per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
+        val = @eval($x.$key)
+        push!(dat, (val, meaning[key][:what], meaning[key][:code][val]...))
+    end
+    return dat
+end
+
+export meaningOf
+
 # Explain
-function _srt_explain(io::IO, x::parsing)
+function explain(x::parsing, abrflg=true,
+                 posflg=false, possep=": ", posaft=": ",
+                 parflg=false, parsep=": ", paraft="",
+                 joinsp="")
+    idx = abrflg ? 3 : 4
+    mox = meaningOf(x)
+    ret = String[]
+    # part of speech
+    tmp  = posflg ? "$(mox[1][2])$(possep)" : ""
+    tmp *= "$(mox[1][idx])$(posaft)"
+    push!(ret, tmp)
+    # parsings
+    for par in mox[2:end]
+        tmp  = parflg ? "$(par[2])$(parsep)" : ""
+        tmp *= "$(par[idx])$(paraft)"
+        push!(ret, tmp)
+    end
+    return join(ret, joinsp)
+end
+
+export explain
+
+estyles = Dict(
+        :EXP => (
+            abrflg=false,   posflg=true,        possep=":\n    ",   posaft="\n",
+            parflg=true,    parsep=":\n    ",   paraft="\n",        joinsp=""
+           ),
+        :LST => (
+            abrflg=false,   posflg=true,        possep=": ",        posaft="\n",
+            parflg=true,    parsep=": ",        paraft="\n",        joinsp=""
+           ),
+        :PLN => (
+            abrflg=false,   posflg=false,       possep=": ",        posaft=" ",
+            parflg=false,   parsep=": ",        paraft=" ",         joinsp=""
+           ),
+        :exp => (
+            abrflg=true,    posflg=true,        possep=":\n    ",   posaft="\n",
+            parflg=true,    parsep=":\n    ",   paraft="\n",        joinsp=""
+           ),
+        :lst => (
+            abrflg=true,    posflg=true,        possep=": ",        posaft="\n",
+            parflg=true,    parsep=": ",        paraft="\n",        joinsp=""
+           ),
+        :pln => (
+            abrflg=true,    posflg=false,       possep=": ",        posaft=" ",
+            parflg=false,   parsep=": ",        paraft=" ",         joinsp=""
+           ),
+    )
+
+export estyles
+
+function _srt_explain(x::parsing)
     ret = String[]
     push!(ret, meaning[:pos][:code][x.pos][1])
     for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
@@ -168,10 +232,12 @@ function _srt_explain(io::IO, x::parsing)
             push!(ret, meaning[key][:code][val][1])
         end
     end
-    return join(ret, "")
+    return length(ret) > 1 ?
+        @sprintf("%s %s", ret[1], join(ret[2:end], "")) :
+        ret[1]
 end
 
-function _mid_explain(io::IO, x::parsing)
+function _mid_explain(x::parsing)
     ret = String[]
     push!(ret, meaning[:pos][:code][x.pos][2])
     for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
@@ -180,12 +246,37 @@ function _mid_explain(io::IO, x::parsing)
             push!(ret, meaning[key][:code][val][2])
         end
     end
-    return join(ret, "")
+    return length(ret) > 1 ?
+        @sprintf("%s: %s", ret[1], join(ret[2:end], " ")) :
+        ret[1]
 end
 
-function _explain(io::IO, x::parsing)
-    
+function _eng_explain(x::parsing)
+    ret = String[]
+    push!(ret, meaning[:pos][:code][x.pos][2])
+    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
+        val = @eval($x.$key)
+        if val != '-'
+            push!(ret, meaning[key][:code][val][2])
+        end
+    end
+    return length(ret) > 1 ?
+        @sprintf("%s %s", join(ret[2:end], " "), ret[1]) :
+        ret[1]
 end
 
-explain(x::parsing, io::IO = Base.stdout) = _explain(io, x)
+function _lng_explain(x::parsing, ind::S=" "^4) where S<:AbstractString
+    ret = String[]
+    tmp = @sprintf("%s\n%s%s", meaning[:pos][:what], ind, meaning[:pos][:code][x.pos][2])
+    push!(ret, tmp)
+    for key in (:per, :ten, :voi, :moo, :cas, :num, :gen, :deg)
+        val = @eval($x.$key)
+        if val != '-'
+            push!(ret, meaning[key][:code][val][2])
+        end
+    end
+    return length(ret) > 1 ?
+        @sprintf("%s: %s", ret[1], join(ret[2:end], " ")) :
+        ret[1]
+end
 
