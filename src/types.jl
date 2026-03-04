@@ -201,8 +201,7 @@ function explain(x::Parsing, style::Symbol=:compact)
         _explain(x, false, false, ord[:def], "", " ")
     elseif style == :engshort
         _explain(x, false, false, ord[:eng], "", " ")
-    elseif style == :compact || true
-        # hardcoded default = :compact
+    elseif style == :compact || true    # :compact is the fallback
         _explain(x, false, false, ord[:def], "", "")
     end
 end
