@@ -170,9 +170,10 @@ export meaningOf
 
 # Explain
 function _explain(x::Parsing,
-                  head::Bool, full::Bool,
-                  order::Tuple{Symbol, Vararg{Symbol}},
-                  isep::String, osep::String)
+        head::Bool, full::Bool,
+        order::Vector{Symbol},
+        isep::String, osep::String
+    )
     mox = full ?
         [ head ? (t[2], t[4]) : (t[4], ) for t in meaningOf(x) ] :
         [ head ? (t[2], t[3]) : (t[3], ) for t in meaningOf(x) ]
@@ -180,4 +181,31 @@ function _explain(x::Parsing,
     srt = [ join(mox[ORD[i]], isep) for i in order if last(mox[ORD[i]]) != "" ]
     return join(srt, osep)
 end
+
+function explain(x::Parsing, style::Symbol=:compact)
+    ord = Dict(
+            :def => [:pos, :per, :ten, :voi, :moo, :cas, :num, :gen, :deg],
+            :eng => [:per, :ten, :voi, :moo, :cas, :num, :gen, :deg, :pos],
+        )
+    if style == :headings
+        _explain(x, true, true, ord[:def], ":\n    ", "\n")
+    elseif style == :form
+        _explain(x, true, true, ord[:def], ": ", "\n")
+    elseif style == :vlist
+        _explain(x, false, true, ord[:def], "", "\n")
+    elseif style == :hlist
+        _explain(x, false, true, ord[:def], "", " ")
+    elseif style == :enghlist
+        _explain(x, false, true, ord[:eng], "", " ")
+    elseif style == :short
+        _explain(x, false, false, ord[:def], "", " ")
+    elseif style == :engshort
+        _explain(x, false, false, ord[:eng], "", " ")
+    elseif style == :compact || true
+        # hardcoded default = :compact
+        _explain(x, false, false, ord[:def], "", "")
+    end
+end
+
+export explain
 
