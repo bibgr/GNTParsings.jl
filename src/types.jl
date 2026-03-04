@@ -169,54 +169,15 @@ end
 export meaningOf
 
 # Explain
-function explain(x::Parsing, abrflg=true,
-                 posflg=false, possep=": ", posaft=": ",
-                 parflg=false, parsep=": ", paraft="",
-                 joinsp="")
-    idx = abrflg ? 3 : 4
-    mox = meaningOf(x)
-    ret = String[]
-    # part of speech
-    tmp  = posflg ? "$(mox[1][2])$(possep)" : ""
-    tmp *= "$(mox[1][idx])$(posaft)"
-    push!(ret, tmp)
-    # Parsings
-    for par in mox[2:end]
-        tmp  = parflg ? "$(par[2])$(parsep)" : ""
-        tmp *= "$(par[idx])$(paraft)"
-        push!(ret, tmp)
-    end
-    return join(ret, joinsp)
+function _explain(x::Parsing,
+                  head::Bool, full::Bool,
+                  order::Tuple{Symbol, Vararg{Symbol}},
+                  isep::String, osep::String)
+    mox = full ?
+        [ head ? (t[2], t[4]) : (t[4], ) for t in meaningOf(x) ] :
+        [ head ? (t[2], t[3]) : (t[3], ) for t in meaningOf(x) ]
+    ORD = (pos=1, per=2, ten=3, voi=4, moo=5, cas=6, num=7, gen=8, deg=9)
+    srt = [ join(mox[ORD[i]], isep) for i in order if last(mox[ORD[i]]) != "" ]
+    return join(srt, osep)
 end
-
-export explain
-
-estyles = Dict(
-        :EXP => (
-            abrflg=false,   posflg=true,        possep=":\n    ",   posaft="\n",
-            parflg=true,    parsep=":\n    ",   paraft="\n",        joinsp=""
-           ),
-        :LST => (
-            abrflg=false,   posflg=true,        possep=": ",        posaft="\n",
-            parflg=true,    parsep=": ",        paraft="\n",        joinsp=""
-           ),
-        :PLN => (
-            abrflg=false,   posflg=false,       possep=": ",        posaft=" ",
-            parflg=false,   parsep=": ",        paraft=" ",         joinsp=""
-           ),
-        :exp => (
-            abrflg=true,    posflg=true,        possep=":\n    ",   posaft="\n",
-            parflg=true,    parsep=":\n    ",   paraft="\n",        joinsp=""
-           ),
-        :lst => (
-            abrflg=true,    posflg=true,        possep=": ",        posaft="\n",
-            parflg=true,    parsep=": ",        paraft="\n",        joinsp=""
-           ),
-        :pln => (
-            abrflg=true,    posflg=false,       possep=": ",        posaft=" ",
-            parflg=false,   parsep=": ",        paraft=" ",         joinsp=""
-           ),
-    )
-
-export estyles
 
